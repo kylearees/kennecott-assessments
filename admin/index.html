@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Admin — Assessment Center</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #1a1f2e; --surface: #20263a; --card: #272d42;
+      --border: #343c58; --accent: #c47a1e; --text: #e8ecf4; --muted: #7a86a8;
+      --error: #ef4444; --green: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; display: flex; flex-direction: column; }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface); border-bottom: 3px solid var(--accent);
+      padding: 12px 20px; display: flex; align-items: center;
+      justify-content: space-between; flex-shrink: 0;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo-mark { width: 34px; height: 34px; background: var(--accent); border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo-mark svg { width: 18px; height: 18px; fill: #000; }
+    .badge { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 1px; }
+    header h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; line-height: 1; }
+    .header-right { display: flex; align-items: center; gap: 14px; }
+    .save-ind { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); opacity: 0; transition: opacity .3s; }
+    .save-ind.show { opacity: 1; }
+    .hdr-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); background: none; border: none; cursor: pointer; text-decoration: none; }
+    .hdr-btn:hover { color: var(--accent); }
+
+    /* ── Screens ── */
+    .screen { display: none; flex: 1; overflow: hidden; }
+    .screen.show { display: flex; }
+    #screenPw { align-items: center; justify-content: center; padding: 20px; }
+
+    /* ── Password ── */
+    .pw-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; padding: 32px 28px; width: 100%; max-width: 360px; }
+    .pw-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .pw-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+
+    /* ── Shared form bits ── */
+    .field-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; }
+    .field-input { width: 100%; background: var(--surface); border: 1.5px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 14px; padding: 9px 11px; -webkit-appearance: none; }
+    .field-input:focus { outline: none; border-color: var(--accent); }
+    .field-input.error { border-color: var(--error); }
+    textarea.field-input { resize: vertical; min-height: 72px; }
+    .field-error { color: var(--error); font-size: 12px; font-weight: 600; margin-top: 5px; display: none; }
+    .submit-btn { width: 100%; padding: 11px; background: var(--accent); color: #000; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; border: none; border-radius: 7px; cursor: pointer; transition: opacity .2s; margin-top: 14px; }
+    .submit-btn:hover { opacity: .9; }
+
+    /* ── Admin layout ── */
+    #screenAdmin { flex-direction: row; }
+    .sidebar { width: 200px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+    .sidebar-lbl { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted); padding: 16px 14px 8px; }
+    .test-item { padding: 10px 14px; cursor: pointer; border-left: 3px solid transparent; transition: background .1s, border-color .1s; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .test-item:hover { background: rgba(196,122,30,.06); }
+    .test-item.sel { background: rgba(196,122,30,.1); border-left-color: var(--accent); }
+    .ti-name { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+    .ti-badge { font-family: 'Barlow Condensed', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 2px 6px; border-radius: 3px; }
+    .ti-badge.on { background: rgba(196,122,30,.2); color: var(--accent); }
+    .ti-badge.off { background: rgba(122,134,168,.12); color: var(--muted); }
+
+    /* ── Editor ── */
+    .editor { flex: 1; overflow-y: auto; padding: 22px 24px 48px; }
+    .ed-section { margin-bottom: 24px; }
+    .sec-head { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .settings-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+    .s-row { display: flex; gap: 14px; flex-wrap: wrap; }
+    .s-field { flex: 1; min-width: 150px; }
+    .s-field .field-input { font-size: 14px; }
+    .score-input { width: 80px !important; flex: none !important; text-align: center; }
+
+    /* Toggle */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .toggle-lbl { font-size: 14px; }
+    .toggle { position: relative; width: 38px; height: 21px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .t-slider { position: absolute; inset: 0; background: var(--border); border-radius: 11px; cursor: pointer; transition: background .2s; }
+    .t-slider::before { content: ''; position: absolute; width: 15px; height: 15px; border-radius: 50%; background: var(--muted); top: 3px; left: 3px; transition: transform .2s, background .2s; }
+    .toggle input:checked + .t-slider { background: var(--accent); }
+    .toggle input:checked + .t-slider::before { transform: translateX(17px); background: #000; }
+
+    /* Questions list */
+    .q-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .q-row { background: var(--card); border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+    .q-num { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--muted); width: 22px; flex-shrink: 0; text-align: right; }
+    .q-type { font-family: 'Barlow Condensed', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; background: rgba(122,134,168,.15); color: var(--muted); flex-shrink: 0; }
+    .q-preview { flex: 1; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .q-btns { display: flex; gap: 5px; flex-shrink: 0; }
+    .icon-btn { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--muted); padding: 4px 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .5px; cursor: pointer; transition: border-color .1s, color .1s; }
+    .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .icon-btn.del:hover { border-color: var(--error); color: var(--error); }
+    .empty-qs { background: var(--card); border: 1.5px solid var(--border); border-radius: 8px; padding: 26px; text-align: center; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+    .add-q-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: var(--card); border: 1.5px dashed var(--border); border-radius: 8px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; width: 100%; transition: border-color .15s, color .15s; }
+    .add-q-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Supabase section */
+    .sb-toggle { display: flex; align-items: center; gap: 7px; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); background: none; border: none; cursor: pointer; margin-bottom: 12px; }
+    .sb-toggle:hover { color: var(--accent); }
+    .sb-body { display: none; }
+    .sb-body.show { display: block; }
+    .sb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── Modal ── */
+    .modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+    .modal-wrap.show { display: flex; }
+    .modal { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 26px 22px; width: 100%; max-width: 540px; max-height: 88vh; overflow-y: auto; }
+    .modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 18px; }
+    .modal-field { margin-bottom: 14px; }
+    .modal-err { color: var(--error); font-size: 12px; font-weight: 600; margin-top: 5px; display: none; }
+
+    /* Type tabs */
+    .type-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+    .type-tab { padding: 6px 12px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: border-color .1s, color .1s, background .1s; }
+    .type-tab.sel { border-color: var(--accent); color: var(--accent); background: rgba(196,122,30,.1); }
+
+    /* Options builder */
+    .opts-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 9px; }
+    .opt-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .opt-check { width: 17px; height: 17px; flex-shrink: 0; cursor: pointer; accent-color: var(--accent); }
+    .opt-input { flex: 1; background: var(--surface); border: 1.5px solid var(--border); border-radius: 5px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 14px; padding: 7px 10px; }
+    .opt-input:focus { outline: none; border-color: var(--accent); }
+    .rm-opt { background: none; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); width: 26px; height: 26px; font-size: 13px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color .1s, color .1s; }
+    .rm-opt:hover { border-color: var(--error); color: var(--error); }
+    .add-opt { display: flex; align-items: center; gap: 6px; padding: 7px 10px; background: none; border: 1.5px dashed var(--border); border-radius: 6px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; width: 100%; transition: border-color .15s, color .15s; margin-top: 2px; }
+    .add-opt:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* TF picker */
+    .tf-pair { display: flex; gap: 10px; }
+    .tf-btn { flex: 1; padding: 10px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 7px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); cursor: pointer; transition: all .12s; }
+    .tf-btn.sel { border-color: var(--accent); color: var(--accent); background: rgba(196,122,30,.1); }
+
+    /* Modal actions */
+    .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .cancel-btn { flex: 1; padding: 10px; background: transparent; border: 1.5px solid var(--border); border-radius: 7px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: border-color .15s, color .15s; }
+    .cancel-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .save-q-btn { flex: 2; padding: 10px; background: var(--accent); color: #000; border: none; border-radius: 7px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: opacity .2s; }
+    .save-q-btn:hover { opacity: .9; }
+
+    .text-hint { background: rgba(122,134,168,.08); border-radius: 7px; padding: 11px 13px; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+
+    .shake { animation: shake .35s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+
+    @media (max-width: 580px) {
+      .sidebar { width: 160px; }
+      .sb-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M9 2L3 7v15h18V7l-6-5H9zm0 2h6l5 4.17V20H4V8.17L9 4zM7 10v2h10v-2H7zm0 4v2h7v-2H7z"/></svg>
+    </div>
+    <div>
+      <div class="badge">Kennecott Mine · Haulage Training</div>
+      <h1>Assessment Admin</h1>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="save-ind" id="saveInd">Saved</span>
+    <a class="hdr-btn" href="../">← All Tests</a>
+    <button class="hdr-btn" onclick="lock()">Lock</button>
+  </div>
+</header>
+
+<!-- ── Password Screen ── -->
+<div class="screen show" id="screenPw" style="flex-direction:column;">
+  <div class="pw-card">
+    <div class="pw-title">Admin Access</div>
+    <div class="pw-sub">Enter the admin password to manage assessments.</div>
+    <label class="field-label" for="pwInput">Password</label>
+    <input class="field-input" id="pwInput" type="password" autocomplete="current-password">
+    <div class="field-error" id="pwErr">Incorrect password.</div>
+    <button class="submit-btn" onclick="login()">Unlock</button>
+  </div>
+</div>
+
+<!-- ── Admin Screen ── -->
+<div class="screen" id="screenAdmin">
+  <aside class="sidebar">
+    <div class="sidebar-lbl">Tests</div>
+    <div id="testList"></div>
+  </aside>
+  <main class="editor" id="editor"></main>
+</div>
+
+<!-- ── Question Modal ── -->
+<div class="modal-wrap" id="modalWrap" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Add Question</div>
+
+    <div class="type-tabs">
+      <button class="type-tab" onclick="setType('multiple-choice')">Single Answer</button>
+      <button class="type-tab" onclick="setType('multiple-select')">Multi-Select</button>
+      <button class="type-tab" onclick="setType('true-false')">True / False</button>
+      <button class="type-tab" onclick="setType('text')">Written</button>
+    </div>
+
+    <div class="modal-field">
+      <label class="field-label">Question Text</label>
+      <textarea class="field-input" id="mQText" rows="3" placeholder="Enter your question…"></textarea>
+      <div class="modal-err" id="mQErr">Please enter the question text.</div>
+    </div>
+
+    <div id="mOptsSection"></div>
+
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="save-q-btn" onclick="saveQ()">Save Question</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ───────────────────────────────────────────
+   CONFIG
+─────────────────────────────────────────── */
+const ADMIN_PW   = 'Training1234';
+const LS_CONFIGS = 'ht_test_configs';
+const LS_SB      = 'ht_supabase_config';
+
+/* ───────────────────────────────────────────
+   DEFAULTS
+─────────────────────────────────────────── */
+function makeDefaults() {
+  const arr = Array.from({length: 10}, (_, i) => ({
+    id: `test-${String(i+1).padStart(2,'0')}`,
+    label: 'Available',
+    active: false,
+    title: `Test ${String(i+1).padStart(2,'0')} — Configure This Test`,
+    passingScore: 80,
+    shuffleQuestions: false,
+    shuffleOptions: false,
+    showCorrectOnSubmit: true,
+    questions: []
+  }));
+  arr[0].title = 'Test 01 — Sample Assessment';
+  arr[0].questions = [
+    { type:'multiple-choice', text:'What is the minimum safe following distance behind a haul truck operating on a single-lane ramp?', options:['One truck length','Two truck lengths','Three truck lengths','Five truck lengths'], answer:1 },
+    { type:'multiple-select', text:'Which of the following are required pre-shift checks before operating a haulage vehicle? (Select all that apply)', options:['Tire pressure and condition','Fuel and fluid levels','Horn and lights operational','Personal phone charged'], answers:[0,1,2] },
+    { type:'true-false', text:'A spotter must maintain radio contact with the haul truck operator at all times when directing a reverse manoeuvre.', answer:true },
+    { type:'text', text:'Describe the steps you would take if your haul truck experienced brake fade on a descent ramp.' }
+  ];
+  return arr;
+}
+
+const DEFAULT_SB = { url:'', anonKey:'', employeeTable:'employees', payrollField:'payroll_number', nameField:'full_name', resultsTable:'test_results' };
+
+/* ───────────────────────────────────────────
+   STATE
+─────────────────────────────────────────── */
+let configs    = [];
+let sbConfig   = {};
+let selIdx     = 0;
+let sbOpen     = false;
+
+// Modal
+let M = { qi:-1, type:'multiple-choice', text:'', opts:[], tfAns:true };
+
+/* ───────────────────────────────────────────
+   AUTH
+─────────────────────────────────────────── */
+function login() {
+  const pw = document.getElementById('pwInput').value;
+  if (pw !== ADMIN_PW) {
+    const card = document.querySelector('.pw-card');
+    document.getElementById('pwErr').style.display = 'block';
+    document.getElementById('pwInput').classList.add('error');
+    card.classList.remove('shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+    setTimeout(() => card.classList.remove('shake'), 400);
+    return;
+  }
+  document.getElementById('pwErr').style.display = 'none';
+  document.getElementById('pwInput').classList.remove('error');
+  document.getElementById('screenPw').classList.remove('show');
+  document.getElementById('screenAdmin').classList.add('show');
+  initAdmin();
+}
+
+function lock() {
+  document.getElementById('screenAdmin').classList.remove('show');
+  document.getElementById('screenPw').classList.add('show');
+  document.getElementById('pwInput').value = '';
+}
+
+document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+/* ───────────────────────────────────────────
+   DATA
+─────────────────────────────────────────── */
+function loadData() {
+  try { configs = JSON.parse(localStorage.getItem(LS_CONFIGS)) || makeDefaults(); }
+  catch { configs = makeDefaults(); }
+  if (!Array.isArray(configs) || configs.length !== 10) configs = makeDefaults();
+
+  try { sbConfig = JSON.parse(localStorage.getItem(LS_SB)) || {...DEFAULT_SB}; }
+  catch { sbConfig = {...DEFAULT_SB}; }
+}
+
+function save() {
+  localStorage.setItem(LS_CONFIGS, JSON.stringify(configs));
+  localStorage.setItem(LS_SB, JSON.stringify(sbConfig));
+  const el = document.getElementById('saveInd');
+  el.classList.add('show');
+  clearTimeout(save._t);
+  save._t = setTimeout(() => el.classList.remove('show'), 1600);
+}
+
+/* ───────────────────────────────────────────
+   INIT
+─────────────────────────────────────────── */
+function initAdmin() {
+  loadData();
+  renderSidebar();
+  renderEditor();
+}
+
+/* ───────────────────────────────────────────
+   SIDEBAR
+─────────────────────────────────────────── */
+function renderSidebar() {
+  document.getElementById('testList').innerHTML = configs.map((c, i) => `
+    <div class="test-item ${i === selIdx ? 'sel' : ''}" onclick="selectTest(${i})">
+      <span class="ti-name">${c.id.replace('test-','Test ')}</span>
+      <span class="ti-badge ${c.active ? 'on' : 'off'}">${c.active ? 'On' : 'Off'}</span>
+    </div>
+  `).join('');
+}
+
+function selectTest(i) {
+  selIdx = i;
+  renderSidebar();
+  renderEditor();
+}
+
+/* ───────────────────────────────────────────
+   EDITOR
+─────────────────────────────────────────── */
+function renderEditor() {
+  const c = configs[selIdx];
+  document.getElementById('editor').innerHTML = `
+
+    <div class="ed-section">
+      <div class="sec-head">Test Settings</div>
+      <div class="settings-card">
+
+        <div class="toggle-row">
+          <span class="toggle-lbl">Active &mdash; visible to test-takers</span>
+          <label class="toggle">
+            <input type="checkbox" id="sActive" ${c.active?'checked':''} onchange="updateSettings()">
+            <span class="t-slider"></span>
+          </label>
+        </div>
+
+        <div class="s-row">
+          <div class="s-field">
+            <label class="field-label">Card Label</label>
+            <input class="field-input" id="sLabel" value="${h(c.label)}" placeholder="e.g. Haul Truck Safety" oninput="updateSettings()">
+          </div>
+          <div>
+            <label class="field-label">Passing Score (%)</label>
+            <input class="field-input score-input" id="sScore" type="number" min="0" max="100" value="${c.passingScore}" oninput="updateSettings()">
+          </div>
+        </div>
+
+        <div class="s-field">
+          <label class="field-label">Page Title</label>
+          <input class="field-input" id="sTitle" value="${h(c.title)}" placeholder="e.g. Test 01 — Haul Truck Safety" oninput="updateSettings()">
+        </div>
+
+        <div class="toggle-row">
+          <span class="toggle-lbl">Shuffle question order</span>
+          <label class="toggle">
+            <input type="checkbox" id="sShuffle" ${c.shuffleQuestions?'checked':''} onchange="updateSettings()">
+            <span class="t-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-lbl">Shuffle answer options</span>
+          <label class="toggle">
+            <input type="checkbox" id="sShuffleOpts" ${c.shuffleOptions?'checked':''} onchange="updateSettings()">
+            <span class="t-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-lbl">Show correct answers after submit</span>
+          <label class="toggle">
+            <input type="checkbox" id="sShowCorrect" ${c.showCorrectOnSubmit?'checked':''} onchange="updateSettings()">
+            <span class="t-slider"></span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="sec-head">Questions (${c.questions.length})</div>
+      <div id="qList">
+        ${c.questions.length
+          ? `<div class="q-list">` + c.questions.map((q,qi) => `
+              <div class="q-row">
+                <span class="q-num">${qi+1}</span>
+                <span class="q-type">${typeAbbr(q.type)}</span>
+                <span class="q-preview">${h(q.text)}</span>
+                <div class="q-btns">
+                  ${qi > 0 ? `<button class="icon-btn" onclick="moveQ(${qi},-1)" title="Move up">↑</button>` : ''}
+                  ${qi < c.questions.length-1 ? `<button class="icon-btn" onclick="moveQ(${qi},1)" title="Move down">↓</button>` : ''}
+                  <button class="icon-btn" onclick="openModal(${qi})">Edit</button>
+                  <button class="icon-btn del" onclick="delQ(${qi})">✕</button>
+                </div>
+              </div>`).join('') + `</div>`
+          : `<div class="empty-qs">No questions yet — add one below</div>`}
+      </div>
+      <button class="add-q-btn" onclick="openModal(-1)">+ Add Question</button>
+    </div>
+
+    <div class="ed-section">
+      <button class="sb-toggle" onclick="toggleSB()">
+        <span id="sbArrow">${sbOpen?'▼':'▶'}</span> Supabase Connection
+      </button>
+      <div class="sb-body ${sbOpen?'show':''}" id="sbBody">
+        <div class="settings-card">
+          <div class="sb-grid">
+            <div>
+              <label class="field-label">Project URL</label>
+              <input class="field-input" id="sbUrl" value="${h(sbConfig.url||'')}" placeholder="https://xxxx.supabase.co" oninput="updateSB()">
+            </div>
+            <div>
+              <label class="field-label">Anon Key</label>
+              <input class="field-input" id="sbKey" value="${h(sbConfig.anonKey||'')}" placeholder="eyJ…" oninput="updateSB()">
+            </div>
+            <div>
+              <label class="field-label">Employee Table</label>
+              <input class="field-input" id="sbEmpT" value="${h(sbConfig.employeeTable||'employees')}" oninput="updateSB()">
+            </div>
+            <div>
+              <label class="field-label">Payroll Field</label>
+              <input class="field-input" id="sbPay" value="${h(sbConfig.payrollField||'payroll_number')}" oninput="updateSB()">
+            </div>
+            <div>
+              <label class="field-label">Name Field</label>
+              <input class="field-input" id="sbName" value="${h(sbConfig.nameField||'full_name')}" oninput="updateSB()">
+            </div>
+            <div>
+              <label class="field-label">Results Table</label>
+              <input class="field-input" id="sbRes" value="${h(sbConfig.resultsTable||'test_results')}" oninput="updateSB()">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleSB() {
+  sbOpen = !sbOpen;
+  document.getElementById('sbArrow').textContent = sbOpen ? '▼' : '▶';
+  document.getElementById('sbBody').classList.toggle('show', sbOpen);
+}
+
+/* ───────────────────────────────────────────
+   SETTINGS
+─────────────────────────────────────────── */
+function updateSettings() {
+  const c = configs[selIdx];
+  c.active             = document.getElementById('sActive').checked;
+  c.label              = document.getElementById('sLabel').value;
+  c.title              = document.getElementById('sTitle').value;
+  c.passingScore       = Math.max(0, Math.min(100, parseInt(document.getElementById('sScore').value) || 80));
+  c.shuffleQuestions   = document.getElementById('sShuffle').checked;
+  c.shuffleOptions     = document.getElementById('sShuffleOpts').checked;
+  c.showCorrectOnSubmit= document.getElementById('sShowCorrect').checked;
+  save();
+  // Update sidebar badge live
+  const items = document.querySelectorAll('.test-item');
+  if (items[selIdx]) {
+    items[selIdx].querySelector('.ti-badge').textContent = c.active ? 'On' : 'Off';
+    items[selIdx].querySelector('.ti-badge').className = `ti-badge ${c.active ? 'on' : 'off'}`;
+  }
+}
+
+function updateSB() {
+  sbConfig.url          = document.getElementById('sbUrl').value;
+  sbConfig.anonKey      = document.getElementById('sbKey').value;
+  sbConfig.employeeTable= document.getElementById('sbEmpT').value;
+  sbConfig.payrollField = document.getElementById('sbPay').value;
+  sbConfig.nameField    = document.getElementById('sbName').value;
+  sbConfig.resultsTable = document.getElementById('sbRes').value;
+  save();
+}
+
+/* ───────────────────────────────────────────
+   QUESTION CRUD
+─────────────────────────────────────────── */
+function moveQ(qi, dir) {
+  const qs = configs[selIdx].questions;
+  const ni = qi + dir;
+  if (ni < 0 || ni >= qs.length) return;
+  [qs[qi], qs[ni]] = [qs[ni], qs[qi]];
+  save();
+  renderEditor();
+}
+
+function delQ(qi) {
+  if (!confirm('Delete this question?')) return;
+  configs[selIdx].questions.splice(qi, 1);
+  save();
+  renderEditor();
+}
+
+/* ───────────────────────────────────────────
+   MODAL
+─────────────────────────────────────────── */
+function openModal(qi) {
+  M.qi = qi;
+  if (qi === -1) {
+    M.type  = 'multiple-choice';
+    M.text  = '';
+    M.opts  = defaultOpts();
+    M.tfAns = true;
+    document.getElementById('modalTitle').textContent = 'Add Question';
+  } else {
+    const q = configs[selIdx].questions[qi];
+    M.type  = q.type;
+    M.text  = q.text;
+    M.tfAns = q.type === 'true-false' ? q.answer : true;
+    if (q.type === 'multiple-choice') {
+      M.opts = q.options.map((o,i) => ({text:o, correct: i===q.answer}));
+    } else if (q.type === 'multiple-select') {
+      M.opts = q.options.map((o,i) => ({text:o, correct: q.answers.includes(i)}));
+    } else {
+      M.opts = defaultOpts();
+    }
+    document.getElementById('modalTitle').textContent = 'Edit Question';
+  }
+  clearModalErr();
+  renderModal();
+  document.getElementById('modalWrap').classList.add('show');
+  setTimeout(() => document.getElementById('mQText').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('modalWrap').classList.remove('show');
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('modalWrap')) closeModal();
+}
+
+function defaultOpts() {
+  return [{text:'',correct:true},{text:'',correct:false},{text:'',correct:false},{text:'',correct:false}];
+}
+
+function clearModalErr() {
+  document.getElementById('mQErr').style.display = 'none';
+  const oe = document.getElementById('mOptErr');
+  if (oe) oe.style.display = 'none';
+}
+
+/* ── render modal ── */
+function renderModal() {
+  // Sync text from DOM before re-render if possible
+  const ta = document.getElementById('mQText');
+  if (ta) M.text = ta.value;
+  syncOptsFromDOM();
+
+  document.getElementById('mQText').value = M.text;
+
+  // Type tabs
+  const types = ['multiple-choice','multiple-select','true-false','text'];
+  document.querySelectorAll('.type-tab').forEach((btn,i) => {
+    btn.classList.toggle('sel', types[i] === M.type);
+  });
+
+  // Options section
+  const sec = document.getElementById('mOptsSection');
+  if (M.type === 'multiple-choice' || M.type === 'multiple-select') {
+    const isMS = M.type === 'multiple-select';
+    sec.innerHTML = `
+      <div class="modal-field">
+        <span class="opts-label">${isMS ? 'Options — check all correct answers' : 'Options — select the one correct answer'}</span>
+        <div id="optRows">
+          ${M.opts.map((o,oi) => `
+            <div class="opt-row">
+              <input class="opt-check" type="${isMS?'checkbox':'radio'}" name="correct"
+                id="oc${oi}" ${o.correct?'checked':''}
+                onchange="${isMS?`toggleMS(${oi})`:`setMC(${oi})`}">
+              <input class="opt-input" type="text" value="${h(o.text)}"
+                placeholder="Option ${String.fromCharCode(65+oi)}"
+                oninput="M.opts[${oi}].text=this.value">
+              <button class="rm-opt" onclick="removeOpt(${oi})" title="Remove">✕</button>
+            </div>`).join('')}
+        </div>
+        <button class="add-opt" onclick="addOpt()">+ Add Option</button>
+        <div class="modal-err" id="mOptErr">Add at least 2 options and mark the correct answer(s).</div>
+      </div>`;
+  } else if (M.type === 'true-false') {
+    sec.innerHTML = `
+      <div class="modal-field">
+        <span class="opts-label">Correct Answer</span>
+        <div class="tf-pair">
+          <button class="tf-btn ${M.tfAns===true?'sel':''}" onclick="setTF(true)">True</button>
+          <button class="tf-btn ${M.tfAns===false?'sel':''}" onclick="setTF(false)">False</button>
+        </div>
+      </div>`;
+  } else {
+    sec.innerHTML = `<div class="text-hint">Written response — employees type a free-text answer. Not automatically scored.</div>`;
+  }
+}
+
+/* ── type change ── */
+function setType(type) {
+  if (type === M.type) return;
+  syncOptsFromDOM();
+  M.text = document.getElementById('mQText').value;
+  M.type = type;
+  // Keep opts if switching between MC and MS
+  if ((type === 'multiple-choice' || type === 'multiple-select') && M.opts.length < 2) {
+    M.opts = defaultOpts();
+  }
+  if (type === 'multiple-choice') {
+    // Ensure exactly one correct
+    const first = M.opts.findIndex(o => o.correct);
+    M.opts.forEach((o,i) => o.correct = i === (first >= 0 ? first : 0));
+  }
+  clearModalErr();
+  renderModal();
+}
+
+function setMC(oi) { M.opts.forEach((o,i) => o.correct = i===oi); }
+function toggleMS(oi) { M.opts[oi].correct = !M.opts[oi].correct; }
+function setTF(val) { M.tfAns = val; renderModal(); }
+
+function addOpt() {
+  syncOptsFromDOM();
+  M.text = document.getElementById('mQText').value;
+  if (M.opts.length >= 8) return;
+  M.opts.push({text:'', correct:false});
+  renderModal();
+  const inputs = document.querySelectorAll('.opt-input');
+  if (inputs.length) inputs[inputs.length-1].focus();
+}
+
+function removeOpt(oi) {
+  syncOptsFromDOM();
+  M.text = document.getElementById('mQText').value;
+  if (M.opts.length <= 2) return;
+  M.opts.splice(oi, 1);
+  if (M.type === 'multiple-choice' && !M.opts.some(o => o.correct)) M.opts[0].correct = true;
+  renderModal();
+}
+
+function syncOptsFromDOM() {
+  document.querySelectorAll('.opt-input').forEach((inp,oi) => {
+    if (M.opts[oi]) M.opts[oi].text = inp.value;
+  });
+  document.querySelectorAll('.opt-check').forEach((inp,oi) => {
+    if (M.opts[oi]) M.opts[oi].correct = inp.checked;
+  });
+}
+
+/* ── save question ── */
+function saveQ() {
+  M.text = document.getElementById('mQText').value.trim();
+  syncOptsFromDOM();
+
+  // Validate question text
+  document.getElementById('mQErr').style.display = 'none';
+  if (!M.text) {
+    document.getElementById('mQErr').style.display = 'block';
+    document.getElementById('mQText').focus();
+    return;
+  }
+
+  // Validate options
+  if (M.type === 'multiple-choice' || M.type === 'multiple-select') {
+    const oe = document.getElementById('mOptErr');
+    if (oe) oe.style.display = 'none';
+    const filled = M.opts.filter(o => o.text.trim());
+    const hasCorrect = filled.some(o => o.correct);
+    if (filled.length < 2 || !hasCorrect) {
+      if (oe) oe.style.display = 'block';
+      return;
+    }
+    M.opts = M.opts.filter(o => o.text.trim()); // strip empty
+  }
+
+  // Build question object
+  let q;
+  if (M.type === 'multiple-choice') {
+    const ci = M.opts.findIndex(o => o.correct);
+    q = { type:'multiple-choice', text:M.text, options:M.opts.map(o=>o.text), answer: ci >= 0 ? ci : 0 };
+  } else if (M.type === 'multiple-select') {
+    q = { type:'multiple-select', text:M.text, options:M.opts.map(o=>o.text), answers:M.opts.map((_,i)=>i).filter(i=>M.opts[i].correct) };
+  } else if (M.type === 'true-false') {
+    q = { type:'true-false', text:M.text, answer:M.tfAns };
+  } else {
+    q = { type:'text', text:M.text };
+  }
+
+  const qs = configs[selIdx].questions;
+  if (M.qi === -1) qs.push(q);
+  else qs[M.qi] = q;
+
+  save();
+  closeModal();
+  renderEditor();
+}
+
+/* ───────────────────────────────────────────
+   HELPERS
+─────────────────────────────────────────── */
+function h(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function typeAbbr(t) {
+  return {
+    'multiple-choice': 'MC',
+    'multiple-select': 'MS',
+    'true-false': 'T/F',
+    'text': 'Text'
+  }[t] || t;
+}
+
+// Escape key closes modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+
+</body>
+</html>

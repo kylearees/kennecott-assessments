@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Test 01 — Kennecott Assessment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #1a1f2e; --surface: #20263a; --card: #272d42;
+      --border: #343c58; --accent: #c47a1e; --text: #e8ecf4; --muted: #7a86a8;
+      --error: #ef4444; --green: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+
+    header {
+      background: var(--surface); border-bottom: 3px solid var(--accent);
+      padding: 14px 20px 12px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo-mark {
+      width: 36px; height: 36px; background: var(--accent); border-radius: 7px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .logo-mark svg { width: 20px; height: 20px; fill: #000; }
+    .header-text .badge {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 700;
+      letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 1px;
+    }
+    .header-text h1 {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800;
+      letter-spacing: 1px; text-transform: uppercase; line-height: 1;
+    }
+    .back-link {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted);
+      text-decoration: none; white-space: nowrap;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    /* ── Progress Bar ── */
+    .progress-bar-wrap { background: var(--surface); padding: 10px 20px; border-bottom: 1px solid var(--border); display: none; }
+    .progress-bar-wrap.show { display: block; }
+    .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .progress-meta span { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+    .progress-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .3s ease; }
+
+    /* ── Screens ── */
+    .screen { display: none; padding: 28px 16px; max-width: 620px; margin: 0 auto; }
+    .screen.show { display: block; }
+
+    /* ── Identity Gate ── */
+    .gate-card {
+      background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; padding: 28px 24px;
+    }
+    .gate-title {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800;
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
+    }
+    .gate-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+
+    .field-group { margin-bottom: 16px; }
+    .field-label {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block;
+    }
+    .field-input {
+      width: 100%; background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 6px; color: var(--text); font-family: 'Barlow', sans-serif;
+      font-size: 15px; padding: 10px 12px; -webkit-appearance: none;
+    }
+    .field-input:focus { outline: none; border-color: var(--accent); }
+    .field-input.error { border-color: var(--error); }
+
+    .field-error { color: var(--error); font-size: 12px; font-weight: 600; margin-top: 5px; display: none; }
+
+    .submit-btn {
+      width: 100%; padding: 12px; background: var(--accent); color: #000;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 800;
+      letter-spacing: 2px; text-transform: uppercase; border: none; border-radius: 7px;
+      cursor: pointer; transition: opacity .2s; margin-top: 8px;
+    }
+    .submit-btn:hover { opacity: .9; }
+    .submit-btn:active { transform: scale(.98); }
+    .submit-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    /* ── Test Screen ── */
+    .q-block {
+      background: var(--card); border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 22px 20px; margin-bottom: 14px;
+    }
+    .q-block.answered { border-color: rgba(196,122,30,.4); }
+
+    .q-num {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+    .q-text { font-size: 16px; font-weight: 500; line-height: 1.5; margin-bottom: 16px; }
+    .q-type-badge {
+      display: inline-block; font-family: 'Barlow Condensed', sans-serif;
+      font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      padding: 3px 7px; border-radius: 4px; background: rgba(122,134,168,.15); color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .options { display: flex; flex-direction: column; gap: 8px; }
+    .option-btn {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border: 1.5px solid var(--border); border-radius: 7px;
+      padding: 11px 14px; cursor: pointer; transition: border-color .1s, background .1s;
+      font-family: 'Barlow', sans-serif; font-size: 15px; color: var(--text);
+      text-align: left; width: 100%;
+    }
+    .option-btn:hover { border-color: var(--accent); }
+    .option-btn.selected { border-color: var(--accent); background: rgba(196,122,30,.1); }
+    .option-btn.correct { border-color: var(--green); background: rgba(34,197,94,.1); }
+    .option-btn.wrong { border-color: var(--error); background: rgba(239,68,68,.08); }
+
+    .option-marker {
+      width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+      transition: border-color .1s, background .1s;
+    }
+    .option-btn.selected .option-marker,
+    .option-btn.correct .option-marker { border-color: var(--accent); background: var(--accent); color: #000; }
+    .option-btn.wrong .option-marker { border-color: var(--error); background: var(--error); color: #fff; }
+
+    /* checkbox variant */
+    .option-marker.sq { border-radius: 4px; }
+
+    .tf-group { display: flex; gap: 10px; }
+    .tf-group .option-btn { flex: 1; justify-content: center; }
+
+    .text-input {
+      width: 100%; background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 6px; color: var(--text); font-family: 'Barlow', sans-serif;
+      font-size: 15px; padding: 10px 12px; resize: vertical; min-height: 80px;
+    }
+    .text-input:focus { outline: none; border-color: var(--accent); }
+    .text-note { font-size: 12px; color: var(--muted); margin-top: 6px; font-style: italic; }
+
+    .test-submit-wrap { padding: 10px 0 30px; }
+
+    /* ── Results Screen ── */
+    .results-card {
+      background: var(--card); border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 32px 24px; text-align: center; margin-bottom: 20px;
+    }
+    .score-ring {
+      width: 110px; height: 110px; margin: 0 auto 20px; position: relative;
+    }
+    .score-ring svg { transform: rotate(-90deg); }
+    .score-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+    .score-ring .track { stroke: var(--border); }
+    .score-ring .fill { stroke: var(--accent); transition: stroke-dashoffset .6s ease; }
+    .score-ring.pass .fill { stroke: var(--green); }
+    .score-ring.fail .fill { stroke: var(--error); }
+    .score-text {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 800; line-height: 1;
+    }
+    .result-badge {
+      display: inline-block; font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
+      padding: 6px 16px; border-radius: 6px; margin-bottom: 12px;
+    }
+    .result-badge.pass { background: rgba(34,197,94,.15); color: var(--green); }
+    .result-badge.fail { background: rgba(239,68,68,.12); color: var(--error); }
+
+    .result-title {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+    }
+    .result-sub { font-size: 14px; color: var(--muted); }
+
+    .review-block {
+      background: var(--card); border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 18px 20px; margin-bottom: 12px; text-align: left;
+    }
+    .review-q { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
+    .review-answer {
+      font-size: 13px; font-weight: 600; padding: 5px 10px; border-radius: 5px; display: inline-block;
+    }
+    .review-answer.correct { background: rgba(34,197,94,.12); color: var(--green); }
+    .review-answer.wrong { background: rgba(239,68,68,.1); color: var(--error); }
+    .review-correct-label { font-size: 12px; color: var(--muted); margin-top: 5px; }
+
+    .save-status { font-size: 13px; color: var(--muted); text-align: center; margin-top: 12px; }
+    .save-status.ok { color: var(--green); }
+    .save-status.err { color: var(--error); }
+
+    .restart-btn {
+      display: block; width: 100%; padding: 12px; background: transparent;
+      border: 1.5px solid var(--border); border-radius: 7px; color: var(--muted);
+      font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: border-color .15s, color .15s;
+      margin-top: 10px;
+    }
+    .restart-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .shake { animation: shake .35s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+
+    @media (max-width: 500px) {
+      header { flex-wrap: wrap; gap: 8px; }
+      .screen { padding: 20px 12px; }
+      .gate-card, .q-block, .results-card, .review-block { padding: 18px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 2L3 7v15h18V7l-6-5H9zm0 2h6l5 4.17V20H4V8.17L9 4zM7 10v2h10v-2H7zm0 4v2h7v-2H7z"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <div class="badge">Assessment Center</div>
+      <h1 id="pageTitle">Loading…</h1>
+    </div>
+  </div>
+  <a class="back-link" href="../">← All Tests</a>
+</header>
+
+<div class="progress-bar-wrap" id="progressWrap">
+  <div class="progress-meta">
+    <span>Progress</span>
+    <span id="progressLabel">0 / 0 answered</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<!-- Screen 1: Identity Gate -->
+<div class="screen show" id="screenGate">
+  <div class="gate-card">
+    <div class="gate-title">Identify Yourself</div>
+    <div class="gate-sub">Enter your full name and payroll number to begin. Your results will be recorded.</div>
+
+    <div class="field-group">
+      <label class="field-label" for="inputName">Full Name</label>
+      <input class="field-input" id="inputName" type="text" placeholder="e.g. Jane Smith" autocomplete="name">
+      <div class="field-error" id="errName">Please enter your full name.</div>
+    </div>
+    <div class="field-group">
+      <label class="field-label" for="inputPayroll">Payroll Number</label>
+      <input class="field-input" id="inputPayroll" type="text" placeholder="e.g. 12345" autocomplete="off">
+      <div class="field-error" id="errPayroll">Please enter your payroll number.</div>
+    </div>
+    <div class="field-error" id="errVerify" style="font-size:13px;margin-bottom:8px;"></div>
+
+    <button class="submit-btn" id="beginBtn" onclick="beginTest()">Begin Assessment</button>
+  </div>
+</div>
+
+<!-- Screen 2: Test -->
+<div class="screen" id="screenTest">
+  <div id="questionsContainer"></div>
+  <div class="test-submit-wrap">
+    <button class="submit-btn" id="submitBtn" onclick="submitTest()">Submit Assessment</button>
+  </div>
+</div>
+
+<!-- Screen 3: Results -->
+<div class="screen" id="screenResults">
+  <div class="results-card">
+    <div class="score-ring" id="scoreRing">
+      <svg width="110" height="110" viewBox="0 0 110 110">
+        <circle class="track" cx="55" cy="55" r="46"/>
+        <circle class="fill" id="scoreArc" cx="55" cy="55" r="46"
+          stroke-dasharray="289" stroke-dashoffset="289"/>
+      </svg>
+      <div class="score-text" id="scoreText">0%</div>
+    </div>
+    <div class="result-badge" id="resultBadge">—</div>
+    <div class="result-title" id="resultTitle">—</div>
+    <div class="result-sub" id="resultSub"></div>
+  </div>
+  <div id="reviewContainer"></div>
+  <div class="save-status" id="saveStatus"></div>
+  <button class="restart-btn" onclick="restart()">← Back to Tests</button>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   TEST CONFIGURATION — edit this block only
+   ───────────────────────────────────────────── */
+const TEST_CONFIG = {
+  id: 'test-01',
+  title: 'Test 01 — Sample Assessment',
+  passingScore: 80,          // percentage required to pass
+  shuffleQuestions: false,
+  shuffleOptions: false,
+  showCorrectOnSubmit: true,
+
+  supabase: {
+    url: '',                 // e.g. 'https://xxxx.supabase.co'
+    anonKey: '',             // your anon/public key
+    employeeTable: 'employees',
+    payrollField: 'payroll_number',
+    nameField: 'full_name',
+    resultsTable: 'test_results'
+  },
+
+  questions: [
+    // ── Multiple Choice (single answer) ──
+    {
+      type: 'multiple-choice',
+      text: 'What is the minimum safe following distance behind a haul truck operating on a single-lane ramp?',
+      options: [
+        'One truck length',
+        'Two truck lengths',
+        'Three truck lengths',
+        'Five truck lengths'
+      ],
+      answer: 1   // index of correct option (0-based)
+    },
+
+    // ── Multiple Select (checkbox, all correct must be chosen) ──
+    {
+      type: 'multiple-select',
+      text: 'Which of the following are required pre-shift checks before operating a haulage vehicle? (Select all that apply)',
+      options: [
+        'Tire pressure and condition',
+        'Fuel and fluid levels',
+        'Horn and lights operational',
+        'Personal phone charged'
+      ],
+      answers: [0, 1, 2]   // indices of all correct options
+    },
+
+    // ── True / False ──
+    {
+      type: 'true-false',
+      text: 'A spotter must maintain radio contact with the haul truck operator at all times when directing a reverse manoeuvre.',
+      answer: true
+    },
+
+    // ── Text (open-ended, not scored) ──
+    {
+      type: 'text',
+      text: 'Describe the steps you would take if your haul truck experienced brake fade on a descent ramp.'
+    }
+  ]
+};
+/* ─────────────────────────────────────────────
+   END CONFIGURATION
+   ───────────────────────────────────────────── */
+
+// Load live config from admin panel if available
+(function() {
+  try {
+    const raw = localStorage.getItem('ht_test_configs');
+    if (raw) {
+      const live = JSON.parse(raw).find(c => c.id === TEST_CONFIG.id);
+      if (live) Object.assign(TEST_CONFIG, live);
+    }
+    const sb = localStorage.getItem('ht_supabase_config');
+    if (sb) Object.assign(TEST_CONFIG.supabase, JSON.parse(sb));
+  } catch(e) {}
+})();
+
+// ── State ──
+let employeeName = '';
+let payrollNumber = '';
+let questions = [];
+let userAnswers = {};   // questionIndex -> value
+let scored = false;
+
+// ── Boot ──
+document.getElementById('pageTitle').textContent = TEST_CONFIG.title;
+document.title = TEST_CONFIG.title + ' — Kennecott Assessment';
+
+// ── Shuffle helper ──
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── Screen helpers ──
+function show(id) {
+  ['screenGate','screenTest','screenResults'].forEach(s => {
+    document.getElementById(s).classList.remove('show');
+  });
+  document.getElementById(id).classList.add('show');
+}
+
+// ── Identity Gate ──
+async function beginTest() {
+  const nameEl = document.getElementById('inputName');
+  const payrollEl = document.getElementById('inputPayroll');
+  const errName = document.getElementById('errName');
+  const errPayroll = document.getElementById('errPayroll');
+  const errVerify = document.getElementById('errVerify');
+  const btn = document.getElementById('beginBtn');
+
+  let valid = true;
+  errName.style.display = 'none';
+  errPayroll.style.display = 'none';
+  errVerify.style.display = 'none';
+  nameEl.classList.remove('error');
+  payrollEl.classList.remove('error');
+
+  const name = nameEl.value.trim();
+  const payroll = payrollEl.value.trim();
+
+  if (!name) {
+    nameEl.classList.add('error');
+    errName.style.display = 'block';
+    valid = false;
+  }
+  if (!payroll) {
+    payrollEl.classList.add('error');
+    errPayroll.style.display = 'block';
+    valid = false;
+  }
+  if (!valid) return;
+
+  const sb = TEST_CONFIG.supabase;
+  if (sb.url && sb.anonKey) {
+    btn.disabled = true;
+    btn.textContent = 'Verifying…';
+    try {
+      const url = `${sb.url}/rest/v1/${sb.employeeTable}?${sb.payrollField}=eq.${encodeURIComponent(payroll)}&select=${sb.nameField},${sb.payrollField}`;
+      const res = await fetch(url, {
+        headers: {
+          'apikey': sb.anonKey,
+          'Authorization': 'Bearer ' + sb.anonKey
+        }
+      });
+      const data = await res.json();
+      if (!data || data.length === 0) {
+        errVerify.textContent = 'Payroll number not found. Contact your trainer.';
+        errVerify.style.display = 'block';
+        payrollEl.classList.add('error');
+        btn.disabled = false;
+        btn.textContent = 'Begin Assessment';
+        return;
+      }
+      // Optional: verify name loosely
+      const row = data[0];
+      const dbName = (row[sb.nameField] || '').toLowerCase().trim();
+      if (dbName && !dbName.includes(name.split(' ')[0].toLowerCase())) {
+        errVerify.textContent = 'Name does not match our records. Check spelling or contact your trainer.';
+        errVerify.style.display = 'block';
+        nameEl.classList.add('error');
+        btn.disabled = false;
+        btn.textContent = 'Begin Assessment';
+        return;
+      }
+    } catch (e) {
+      // Network error — allow through
+    }
+    btn.disabled = false;
+    btn.textContent = 'Begin Assessment';
+  }
+
+  employeeName = name;
+  payrollNumber = payroll;
+  startTest();
+}
+
+// ── Test ──
+function startTest() {
+  questions = TEST_CONFIG.shuffleQuestions
+    ? shuffle(TEST_CONFIG.questions)
+    : [...TEST_CONFIG.questions];
+
+  if (TEST_CONFIG.shuffleOptions) {
+    questions = questions.map(q => {
+      if ((q.type === 'multiple-choice' || q.type === 'multiple-select') && q.options) {
+        const opts = [...q.options];
+        const mapping = opts.map((_, i) => i);
+        // shuffle with index tracking
+        for (let i = mapping.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [mapping[i], mapping[j]] = [mapping[j], mapping[i]];
+        }
+        return { ...q, options: mapping.map(i => opts[i]), _optMap: mapping };
+      }
+      return q;
+    });
+  }
+
+  userAnswers = {};
+  renderQuestions();
+  document.getElementById('progressWrap').classList.add('show');
+  updateProgress();
+  show('screenTest');
+}
+
+function renderQuestions() {
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = '';
+
+  questions.forEach((q, qi) => {
+    const block = document.createElement('div');
+    block.className = 'q-block';
+    block.id = `q-block-${qi}`;
+
+    const typeLabel = {
+      'multiple-choice': 'Single Answer',
+      'multiple-select': 'Select All That Apply',
+      'true-false': 'True / False',
+      'text': 'Written Response (Not Scored)'
+    }[q.type] || q.type;
+
+    let optionsHTML = '';
+
+    if (q.type === 'multiple-choice') {
+      optionsHTML = `<div class="options">` +
+        q.options.map((opt, oi) => `
+          <button class="option-btn" id="opt-${qi}-${oi}" onclick="selectMC(${qi}, ${oi})">
+            <span class="option-marker">${String.fromCharCode(65 + oi)}</span>
+            ${opt}
+          </button>`).join('') +
+        `</div>`;
+    } else if (q.type === 'multiple-select') {
+      optionsHTML = `<div class="options">` +
+        q.options.map((opt, oi) => `
+          <button class="option-btn" id="opt-${qi}-${oi}" onclick="selectMS(${qi}, ${oi})">
+            <span class="option-marker sq">✓</span>
+            ${opt}
+          </button>`).join('') +
+        `</div>`;
+    } else if (q.type === 'true-false') {
+      optionsHTML = `
+        <div class="tf-group">
+          <button class="option-btn" id="opt-${qi}-true" onclick="selectTF(${qi}, true)">
+            <span class="option-marker">T</span> True
+          </button>
+          <button class="option-btn" id="opt-${qi}-false" onclick="selectTF(${qi}, false)">
+            <span class="option-marker">F</span> False
+          </button>
+        </div>`;
+    } else if (q.type === 'text') {
+      optionsHTML = `
+        <textarea class="text-input" id="text-${qi}" rows="4"
+          oninput="selectText(${qi}, this.value)"
+          placeholder="Type your response here…"></textarea>
+        <div class="text-note">Open-ended response — not scored.</div>`;
+    }
+
+    block.innerHTML = `
+      <div class="q-num">Question ${qi + 1} of ${questions.length}</div>
+      <div class="q-type-badge">${typeLabel}</div>
+      <div class="q-text">${q.text}</div>
+      ${optionsHTML}
+    `;
+
+    container.appendChild(block);
+  });
+}
+
+function selectMC(qi, oi) {
+  if (scored) return;
+  const q = questions[qi];
+  userAnswers[qi] = oi;
+  q.options.forEach((_, i) => {
+    document.getElementById(`opt-${qi}-${i}`).classList.toggle('selected', i === oi);
+  });
+  markAnswered(qi);
+  updateProgress();
+}
+
+function selectMS(qi, oi) {
+  if (scored) return;
+  if (!userAnswers[qi]) userAnswers[qi] = [];
+  const arr = userAnswers[qi];
+  const idx = arr.indexOf(oi);
+  if (idx === -1) arr.push(oi); else arr.splice(idx, 1);
+  const btn = document.getElementById(`opt-${qi}-${oi}`);
+  btn.classList.toggle('selected', arr.includes(oi));
+  markAnswered(qi, arr.length > 0);
+  updateProgress();
+}
+
+function selectTF(qi, val) {
+  if (scored) return;
+  userAnswers[qi] = val;
+  document.getElementById(`opt-${qi}-true`).classList.toggle('selected', val === true);
+  document.getElementById(`opt-${qi}-false`).classList.toggle('selected', val === false);
+  markAnswered(qi);
+  updateProgress();
+}
+
+function selectText(qi, val) {
+  if (scored) return;
+  userAnswers[qi] = val;
+  markAnswered(qi, val.trim().length > 0);
+  updateProgress();
+}
+
+function markAnswered(qi, answered = true) {
+  const block = document.getElementById(`q-block-${qi}`);
+  block.classList.toggle('answered', answered);
+  if (!answered) delete userAnswers[qi];
+}
+
+function updateProgress() {
+  const total = questions.length;
+  const answered = Object.keys(userAnswers).length;
+  document.getElementById('progressLabel').textContent = `${answered} / ${total} answered`;
+  document.getElementById('progressFill').style.width = `${total ? (answered / total) * 100 : 0}%`;
+}
+
+// ── Submit ──
+function submitTest() {
+  const scorable = questions.filter(q => q.type !== 'text');
+  let correct = 0;
+
+  scorable.forEach((q, _) => {
+    const qi = questions.indexOf(q);
+    const ua = userAnswers[qi];
+
+    if (q.type === 'multiple-choice') {
+      if (ua === q.answer) correct++;
+    } else if (q.type === 'multiple-select') {
+      const ua2 = (ua || []).slice().sort().join(',');
+      const ans = q.answers.slice().sort().join(',');
+      if (ua2 === ans) correct++;
+    } else if (q.type === 'true-false') {
+      if (ua === q.answer) correct++;
+    }
+  });
+
+  const scorePct = scorable.length ? Math.round((correct / scorable.length) * 100) : 100;
+  const passed = scorePct >= TEST_CONFIG.passingScore;
+
+  scored = true;
+  document.getElementById('submitBtn').disabled = true;
+
+  if (TEST_CONFIG.showCorrectOnSubmit) showCorrections();
+
+  showResults(scorePct, passed, correct, scorable.length);
+  saveResults(scorePct, passed);
+
+  document.getElementById('progressWrap').classList.remove('show');
+  show('screenResults');
+  window.scrollTo(0, 0);
+}
+
+function showCorrections() {
+  questions.forEach((q, qi) => {
+    if (q.type === 'text') return;
+    const ua = userAnswers[qi];
+
+    if (q.type === 'multiple-choice') {
+      q.options.forEach((_, oi) => {
+        const btn = document.getElementById(`opt-${qi}-${oi}`);
+        btn.classList.remove('selected');
+        if (oi === q.answer) btn.classList.add('correct');
+        else if (oi === ua) btn.classList.add('wrong');
+      });
+    } else if (q.type === 'multiple-select') {
+      const ua2 = ua || [];
+      q.options.forEach((_, oi) => {
+        const btn = document.getElementById(`opt-${qi}-${oi}`);
+        btn.classList.remove('selected');
+        if (q.answers.includes(oi) && ua2.includes(oi)) btn.classList.add('correct');
+        else if (!q.answers.includes(oi) && ua2.includes(oi)) btn.classList.add('wrong');
+        else if (q.answers.includes(oi) && !ua2.includes(oi)) btn.classList.add('correct');
+      });
+    } else if (q.type === 'true-false') {
+      ['true','false'].forEach(v => {
+        const btn = document.getElementById(`opt-${qi}-${v}`);
+        const val = v === 'true';
+        btn.classList.remove('selected');
+        if (val === q.answer) btn.classList.add('correct');
+        else if (ua === val) btn.classList.add('wrong');
+      });
+    }
+  });
+}
+
+function showResults(pct, passed, correct, total) {
+  const ring = document.getElementById('scoreRing');
+  const arc = document.getElementById('scoreArc');
+  const circumference = 289;
+
+  ring.classList.add(passed ? 'pass' : 'fail');
+  const offset = circumference - (circumference * pct / 100);
+  setTimeout(() => { arc.style.strokeDashoffset = offset; }, 50);
+
+  document.getElementById('scoreText').textContent = pct + '%';
+  document.getElementById('resultBadge').textContent = passed ? 'Passed' : 'Failed';
+  document.getElementById('resultBadge').className = 'result-badge ' + (passed ? 'pass' : 'fail');
+  document.getElementById('resultTitle').textContent = passed ? 'Well done!' : 'Not quite there.';
+  document.getElementById('resultSub').textContent =
+    total > 0
+      ? `You answered ${correct} of ${total} scored questions correctly. Passing score: ${TEST_CONFIG.passingScore}%.`
+      : 'No scored questions in this assessment.';
+
+  if (TEST_CONFIG.showCorrectOnSubmit) {
+    const container = document.getElementById('reviewContainer');
+    container.innerHTML = '';
+    questions.forEach((q, qi) => {
+      if (q.type === 'text') return;
+      const ua = userAnswers[qi];
+      let isCorrect = false;
+      let yourAnswer = 'Not answered';
+      let correctAnswer = '';
+
+      if (q.type === 'multiple-choice') {
+        isCorrect = ua === q.answer;
+        yourAnswer = ua !== undefined ? q.options[ua] : 'Not answered';
+        correctAnswer = q.options[q.answer];
+      } else if (q.type === 'multiple-select') {
+        const ua2 = (ua || []).sort().join(',');
+        isCorrect = ua2 === q.answers.slice().sort().join(',');
+        yourAnswer = ua && ua.length ? ua.map(i => q.options[i]).join(', ') : 'Not answered';
+        correctAnswer = q.answers.map(i => q.options[i]).join(', ');
+      } else if (q.type === 'true-false') {
+        isCorrect = ua === q.answer;
+        yourAnswer = ua !== undefined ? (ua ? 'True' : 'False') : 'Not answered';
+        correctAnswer = q.answer ? 'True' : 'False';
+      }
+
+      const block = document.createElement('div');
+      block.className = 'review-block';
+      block.innerHTML = `
+        <div class="q-num">Question ${qi + 1}</div>
+        <div class="review-q">${q.text}</div>
+        <div class="review-answer ${isCorrect ? 'correct' : 'wrong'}">
+          Your answer: ${yourAnswer}
+        </div>
+        ${!isCorrect ? `<div class="review-correct-label">Correct: ${correctAnswer}</div>` : ''}
+      `;
+      container.appendChild(block);
+    });
+  }
+}
+
+async function saveResults(pct, passed) {
+  const sb = TEST_CONFIG.supabase;
+  if (!sb.url || !sb.anonKey) return;
+
+  const payload = {
+    test_id: TEST_CONFIG.id,
+    employee_name: employeeName,
+    payroll_number: payrollNumber,
+    score: pct,
+    passed: passed,
+    answers: JSON.stringify(userAnswers),
+    completed_at: new Date().toISOString()
+  };
+
+  const statusEl = document.getElementById('saveStatus');
+  statusEl.textContent = 'Saving results…';
+
+  try {
+    const res = await fetch(`${sb.url}/rest/v1/${sb.resultsTable}`, {
+      method: 'POST',
+      headers: {
+        'apikey': sb.anonKey,
+        'Authorization': 'Bearer ' + sb.anonKey,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok || res.status === 201) {
+      statusEl.textContent = 'Results saved.';
+      statusEl.className = 'save-status ok';
+    } else {
+      statusEl.textContent = 'Could not save results — contact your trainer.';
+      statusEl.className = 'save-status err';
+    }
+  } catch {
+    statusEl.textContent = 'No connection — results not saved.';
+    statusEl.className = 'save-status err';
+  }
+}
+
+function restart() {
+  window.location.href = '../';
+}
+
+// Enter on identity gate fields
+['inputName','inputPayroll'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') beginTest();
+  });
+});
+</script>
+
+</body>
+</html>

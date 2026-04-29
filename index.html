@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Assessment Center — Kennecott Trainers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #1a1f2e; --surface: #20263a; --card: #272d42;
+      --border: #343c58; --accent: #c47a1e; --text: #e8ecf4; --muted: #7a86a8;
+      --error: #ef4444; --green: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+
+    header {
+      background: var(--surface); border-bottom: 3px solid var(--accent);
+      padding: 16px 20px 14px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .logo-mark {
+      width: 40px; height: 40px; background: var(--accent); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .logo-mark svg { width: 22px; height: 22px; fill: #000; }
+    .header-text .badge {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 2px;
+    }
+    .header-text h1 {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 800;
+      letter-spacing: 1px; text-transform: uppercase; line-height: 1;
+    }
+    .back-link {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted);
+      text-decoration: none; white-space: nowrap;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    .wrap { padding: 28px 16px; max-width: 900px; margin: 0 auto; }
+    .section-label {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 16px;
+    }
+
+    .test-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;
+    }
+
+    .test-card {
+      background: var(--card); border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 20px; display: flex; flex-direction: column; gap: 10px;
+      transition: border-color .15s;
+    }
+    .test-card.active { cursor: pointer; }
+    .test-card.active:hover { border-color: var(--accent); }
+    .test-card.inactive { opacity: .55; cursor: default; }
+
+    .test-num {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
+      letter-spacing: 3px; color: var(--muted); text-transform: uppercase;
+    }
+    .test-label {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 21px; font-weight: 800;
+      letter-spacing: .5px; text-transform: uppercase; line-height: 1.1; color: var(--text);
+      flex: 1;
+    }
+    .test-badge {
+      display: inline-block; font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      padding: 4px 9px; border-radius: 4px; align-self: flex-start;
+    }
+    .test-badge.status-active { background: rgba(196,122,30,.18); color: var(--accent); }
+    .test-badge.status-inactive { background: rgba(122,134,168,.12); color: var(--muted); }
+
+    .test-arrow {
+      color: var(--accent); font-size: 20px; align-self: flex-end; opacity: 0;
+      transition: opacity .15s;
+    }
+    .test-card.active:hover .test-arrow { opacity: 1; }
+
+    @media (max-width: 600px) {
+      .test-grid { grid-template-columns: 1fr 1fr; }
+      header { flex-wrap: wrap; gap: 10px; }
+    }
+    @media (max-width: 380px) {
+      .test-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 2L3 7v15h18V7l-6-5H9zm0 2h6l5 4.17V20H4V8.17L9 4zM7 10v2h10v-2H7zm0 4v2h7v-2H7z"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <div class="badge">Kennecott Mine · Haulage Training</div>
+      <h1>Assessment Center</h1>
+    </div>
+  </div>
+  <a class="back-link" href="https://kennecotttrainers.com">← Main Site</a>
+</header>
+
+<div class="wrap">
+  <div class="section-label">Available Assessments</div>
+  <div class="test-grid" id="testGrid"></div>
+</div>
+
+<script>
+  const TESTS_DEFAULT = [
+    { id: 'test-01', label: 'Available', active: false },
+    { id: 'test-02', label: 'Available', active: false },
+    { id: 'test-03', label: 'Available', active: false },
+    { id: 'test-04', label: 'Available', active: false },
+    { id: 'test-05', label: 'Available', active: false },
+    { id: 'test-06', label: 'Available', active: false },
+    { id: 'test-07', label: 'Available', active: false },
+    { id: 'test-08', label: 'Available', active: false },
+    { id: 'test-09', label: 'Available', active: false },
+    { id: 'test-10', label: 'Available', active: false },
+  ];
+
+  let TESTS = TESTS_DEFAULT;
+  try {
+    const raw = localStorage.getItem('ht_test_configs');
+    if (raw) TESTS = JSON.parse(raw);
+  } catch(e) {}
+
+  const grid = document.getElementById('testGrid');
+
+  TESTS.forEach((t, i) => {
+    const num = String(i + 1).padStart(2, '0');
+    const card = document.createElement('div');
+    card.className = 'test-card ' + (t.active ? 'active' : 'inactive');
+
+    card.innerHTML = `
+      <div class="test-num">Test ${num}</div>
+      <div class="test-label">${t.label}</div>
+      <div class="test-badge ${t.active ? 'status-active' : 'status-inactive'}">
+        ${t.active ? 'Active' : 'Not Assigned'}
+      </div>
+      ${t.active ? '<div class="test-arrow">→</div>' : ''}
+    `;
+
+    if (t.active) {
+      card.addEventListener('click', () => {
+        window.location.href = `./${t.id}/`;
+      });
+    }
+
+    grid.appendChild(card);
+  });
+</script>
+
+</body>
+</html>
